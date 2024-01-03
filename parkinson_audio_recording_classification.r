@@ -150,7 +150,7 @@ legend("topleft", legend=c("Case", "Control"),inset=.02,
        fill=c("red", "blue"), cex=.9)
 
 # applying SVM
-svmfit = svm(Class ~ ., data = mean_pca_projection  , kernel = "radial",type ='C-classification',)
+svmfit = svm(Class ~ ., data = mean_pca_projection  , kernel = "radial",type ='nu-classification')
 grid_set = expand.grid(X1, X2)
 colnames(grid_set) = c('X1', 'X2')
 y_grid = predict(svmfit, grid_set)
