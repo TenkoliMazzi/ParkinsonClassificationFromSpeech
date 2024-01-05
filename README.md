@@ -49,8 +49,7 @@ In the test dataset, 28 PD patients were asked to say sustained vowels 'a' and '
 ## Data Preprocessing
 
 The script performs various data preprocessing steps, including handling missing values, normalizing data, and identifying and removing overcorrelated features.
-The correltaion treshold is varied in order to achieve the best prediction results.
-https://docs.github.com/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax
+The correlation treshold is varied in order to achieve the best prediction results.
 ## Principal Component Analysis (PCA)
 Principal Component Analysis is used to visualize and reduce the dimensionality of the dataset. The script generates PCA plots before and after removing overcorrelated features.
 
