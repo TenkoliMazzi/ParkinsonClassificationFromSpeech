@@ -58,8 +58,11 @@ The script applies SVM with both linear and radial kernels for classification.
 The SVM prediction is applied to the PCA projected datapoints. 
 The results are visualized with scatter plots and decision boundaries.
 <!-- Centered Image -->
-<p align="center">
-  <img src="https://github.com/TenkoliMazzi/ParkinsonClassificationFromSpeech/blob/main/images/SVMRadialTrain.png" alt="SVM Plot" width="50%" height="50%">
+<p align="left">
+  <img src="https://github.com/TenkoliMazzi/ParkinsonClassificationFromSpeech/blob/main/images/SVMRadialTrain.png" alt="SVM Plot Train" width="50%" height="50%">
+</p>
+<p align="right">
+  <img src="https://github.com/TenkoliMazzi/ParkinsonClassificationFromSpeech/blob/main/images/SVMRadialTest.png" alt="SVM Plot Test" width="50%" height="50%">
 </p>
 Feel free to adapt the script to your specific dataset and requirements. If you encounter any issues or have questions, please don't hesitate to reach out.
 
