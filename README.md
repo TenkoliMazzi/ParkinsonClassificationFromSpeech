@@ -57,14 +57,10 @@ Principal Component Analysis is used to visualize and reduce the dimensionality 
 The script applies SVM with both linear and radial kernels for classification. 
 The SVM prediction is applied to the PCA projected datapoints. 
 The results are visualized with scatter plots and decision boundaries.
-<!-- Centered Image -->
-<div class="row">
-  <div class="column">
-    <img src="https://github.com/TenkoliMazzi/ParkinsonClassificationFromSpeech/blob/main/images/SVMRadialTrain.png" alt="SVM Plot Train" width="45%" height="45%">
-  <div class="column">
-   <img src="https://github.com/TenkoliMazzi/ParkinsonClassificationFromSpeech/blob/main/images/SVMRadialTest.png" alt="SVM Plot Test" width="45%" height="45%">
-  </div>  
-</div>
+<p float="center">
+    <img src="https://github.com/TenkoliMazzi/ParkinsonClassificationFromSpeech/blob/main/images/SVMRadialTrain.png" alt="SVM Plot Train" width="30%" height="30%">
+    <img src="https://github.com/TenkoliMazzi/ParkinsonClassificationFromSpeech/blob/main/images/SVMRadialTest.png" alt="SVM Plot Test" width="30%" height="30%">
+</p>
 
 Feel free to adapt the script to your specific dataset and requirements. If you encounter any issues or have questions, please don't hesitate to reach out.
 
