@@ -49,13 +49,14 @@ In the test dataset, 28 PD patients were asked to say sustained vowels 'a' and '
 ## Data Preprocessing
 
 The script performs various data preprocessing steps, including handling missing values, normalizing data, and identifying and removing overcorrelated features.
-
+The correlation treshold is varied in order to achieve the best prediction results.
 ## Principal Component Analysis (PCA)
 Principal Component Analysis is used to visualize and reduce the dimensionality of the dataset. The script generates PCA plots before and after removing overcorrelated features.
 
 ## Support Vector Machine (SVM)
-The script applies SVM with both linear and radial kernels for classification. The SVM prediction is applied to the PCA projected datapoints. The results are visualized with scatter plots and decision boundaries.
-
+The script applies SVM with both linear and radial kernels for classification. 
+The SVM prediction is applied to the PCA projected datapoints. 
+The results are visualized with scatter plots and decision boundaries.
 <!-- Centered Image -->
 <p align="center">
   <img src="https://github.com/TenkoliMazzi/ParkinsonClassificationFromSpeech/blob/main/images/SVMRadialTrain.png" alt="SVM Plot" width="50%" height="50%">
