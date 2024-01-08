@@ -46,16 +46,19 @@ In the test dataset, 28 PD patients were asked to say sustained vowels 'a' and '
   - Features 20-23: Number of pulses, Number of periods, Mean period, Standard deviation of period
   - Features 24-26: Fraction of locally unvoiced frames, Number of voice breaks, Degree of voice breaks
 
-## Data Preprocessing
+## Method
+The method is the following:
+  -  Merge the legacy train and test data.
+  -  Mean the features for each patients.
+  -  Split the dataset in a new Train and Test, with better distribution of case and control.
+  -  Check for redundancy in features of Train: for each features couple the whose correlation is higher than a treshold, discard (in both the datasets) one of the two.
+  -  Perform PCA analysis on the filtered Train data, retrieving PCA Coefficients.
+  -  Project Train data in the PCA Space.
+  -  Train the SVM Model over the Train PCA Projections.
+  -  Project Test data in the PCA Space, using the Train PCA Coefficients.
+  -  Check the Model performance (Accuracy, Precision, Sensitivity).
 
-The script performs various data preprocessing steps, including handling missing values, normalizing data, and identifying and removing overcorrelated features.
-The correlation treshold is varied in order to achieve the best prediction results.
-## Principal Component Analysis (PCA)
-Principal Component Analysis is used to visualize and reduce the dimensionality of the dataset. The script generates PCA plots before and after removing overcorrelated features.
-
-## Support Vector Machine (SVM)
-The script applies SVM with both linear and radial kernels for classification. 
-The SVM prediction is applied to the PCA projected datapoints. 
+Repeating the method for different correlation tresholds can yeld the better result for a given train dataset.
 The results are visualized with scatter plots and decision boundaries.
 <p float="center">
     <img src="https://github.com/TenkoliMazzi/ParkinsonClassificationFromSpeech/blob/main/images/SVMRadialTrain.png" alt="SVM Plot Train" width="45%" height="45%">
