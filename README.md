@@ -49,7 +49,7 @@ In the test dataset, 28 PD patients were asked to say sustained vowels 'a' and '
 ## Method
 The method is the following:
   -  Merge the legacy train and test data.
-  -  Mean the features for each patients.
+  -  Mean the features for each patients over the different kinds of audio samples.
   -  Split the dataset in a new Train and Test, with better distribution of case and control.
   -  Check for redundancy in features of Train: for each features couple the whose correlation is higher than a treshold, discard (in both the datasets) one of the two.
   -  Perform PCA analysis on the filtered Train data, retrieving PCA Coefficients.
