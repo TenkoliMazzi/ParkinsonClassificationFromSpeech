@@ -35,8 +35,8 @@ read_data <- function(file_path, col_names) {
 }
 
 # Normalize data
-normalize_data <- function(df, to_analyze_cols, non_predictive_cols) {
-  df_normalized <- subset(df, select = non_predictive_cols)
+normalize_data <- function(df, to_analyze_cols) {
+  df_normalized <- df
   data_normalized <- as.data.frame(scale(subset(df, select = to_analyze_cols)))
   df_normalized[to_analyze_cols] <- data_normalized
   return(df_normalized)
@@ -44,7 +44,7 @@ normalize_data <- function(df, to_analyze_cols, non_predictive_cols) {
 
 # Calculate correlation matrix and filter features with high correlation
 filter_high_correlation <- function(data, tresh, to_analyze_cols) {
-  
+
   corr_matrix <- cor(subset(data,select=to_analyze_cols))
   ggcorrplot(corr_matrix)
   
@@ -56,8 +56,7 @@ filter_high_correlation <- function(data, tresh, to_analyze_cols) {
   for (i in 1:num_of_overcorr) {
     checking <- to_analyze_cols[overcorr_cells_indexes[i, 1]]  # Identify the first feature in the pair
     correlated_column <- to_analyze_cols[overcorr_cells_indexes[i, 2]]  # Identify the second feature in the pair
-    
-
+   
     if (checking != correlated_column) {
       not_overcorrelated_features[[checking]] <- c(not_overcorrelated_features[[checking]], correlated_column)  # Append correlated columns
       
@@ -70,6 +69,7 @@ filter_high_correlation <- function(data, tresh, to_analyze_cols) {
     }
   }
   
+
   not_overcorrelated_features_names <- names(not_overcorrelated_features)  # Extract names of not overcorrelated features
   overcorrelated_features_names <- to_analyze_cols[!to_analyze_cols %in% not_overcorrelated_features_names]  # Identify overcorrelated features
   
@@ -99,7 +99,7 @@ project <- function(data,coeffs){
 }
 
 # Visualization of PCA results
-visualize_pca <- function(projections, y) {
+visualize_pca <- function(projections, y,label = "") {
   num_of_pc = ncol(projections)
   plot_colors <- as.matrix(y)
   plot_colors[plot_colors == 0] <- "blue"
@@ -112,7 +112,7 @@ visualize_pca <- function(projections, y) {
     plot( x = projections,
           col = plot_colors,
           xlab = 'Comp1', ylab = 'Comp2',
-          main = "PCA Projections (Train Set)")
+          main = paste("PCA Projection",label))
     
     legend("topleft", 
            legend=c("Case", "Control"),
@@ -126,24 +126,32 @@ visualize_pca <- function(projections, y) {
 } 
 
 # Mean PCA projections for a patient, over every kind of voice sample 
-mean_over_samples <- function(data,patients_id,samples_class){
+mean_over_samples <- function(data,dframe){
     # you can leave samples_class = -1 where you don't want a sample to be analized
+    N = nrow(data)
+    M = ncol(data)
+    
+    ids = unique(dframe["PatientID"])
   
-    N = length(as.matrix(patients_id))
-    P = max(patients_id)
-    n_feat = ncol(data)
-    mean_of_data <- data.frame(matrix(0,P,n_feat))
-    num_samples_of_patient <- array(0,P)
+    
+    mean_for_patient = cbind(ids,matrix(0,length(ids),M+1),dframe[rownames(ids),"Class"])
+    colnames(mean_for_patient) <- c("PatientID",colnames(data),"SamplesCount","Class")
+    
     
     for(i in 1:N){
-      p <- patients_id[i,]
-      if(samples_class[i,] != -1){
-          mean_of_data[p,] <- data[i,] + mean_of_data[p,]
-          num_samples_of_patient[p] <- num_samples_of_patient[p] + 1
+      p <- dframe[i,"PatientID"]
+      if(dframe[i,"SampleClass"] != -1){
+          row_to_update <- which(mean_for_patient["PatientID"] == p)
+          mean_for_patient[row_to_update,2:(M+2)] <- mean_for_patient[row_to_update,2:(M+2)] + cbind(data[i,],array(1,length(ids)))
       }
     }
-    mean_of_data <- mean_of_data/num_samples_of_patient
-    return(mean_of_data)
+
+  
+    
+    
+   
+    mean_for_patient[,1:M+1] <- mean_for_patient[,1:M+1]/ mean_for_patient$SamplesCount
+    return(mean_for_patient)
 }
 
 # SVM model training and visualization
@@ -159,13 +167,31 @@ test_svm <- function(svmmodel, data, y,show = TRUE) {
   if(show) show_svm(svmmodel,data,y,"SVM Over Test Data")
   return(as.matrix(predict(svmmodel,data)) == y)
 }
+
+confusion_matrix <- function(svmmodel,data,y){
+  pred <- as.matrix(predict(svmmodel,data))
+
+  pp <- sum(pred == "1")
+ 
+  pn <- sum(pred == "0")
+  tp <- sum(pred == "1" &  y == 1)
+  tn <- sum(pred == "0" & y == 0)
+ 
+  fp <- pp-tp
+ 
+  fn <- pn-tn
+  return(matrix(c(tn,fn,fp,tp),2,2))
+}
 show_svm <- function(svmmodel,data,y,label="SVM"){
+
   X1 = seq(min(data[, 1])-.2, max(data[, 1])+.2, by = .1)
   X2 = seq(min(data[, 2])-.2, max(data[, 2])+.2, by = .1)
   grid_set = expand.grid(X1, X2)
-  colnames(grid_set) = c('X1', 'X2')
-  
+
+  colnames(grid_set) = c('Comp.1', 'Comp.2')
+ 
   y_grid = predict(svmmodel, grid_set)
+
   plot(data[, -3], main = label,
        xlab = 'Comp1', ylab = 'Comp2',
        xlim = range(X1), ylim = range(X2))
@@ -174,8 +200,8 @@ show_svm <- function(svmmodel,data,y,label="SVM"){
   plot_colors[plot_colors == 0] <- "blue"
   plot_colors[plot_colors == 1] <- "red"
   point_colors <- as.matrix(y_grid) 
-  point_colors[point_colors == 0] <- "blue3"
-  point_colors[point_colors == 1] <- "red3"
+  point_colors[point_colors == 0] <- "blue4"
+  point_colors[point_colors == 1] <- "red4"
   
   # contour(X1, X2, matrix(as.numeric(y_grid), length(X1), length(X2)), add = TRUE,pch = 1)
   points(grid_set, pch = 15, col = point_colors,cex = 5)
@@ -185,58 +211,122 @@ show_svm <- function(svmmodel,data,y,label="SVM"){
          fill = c("red", "blue"), cex = 0.9)
   
 }
-evaluate_feature_reduction_svm <- function(train,test,over_corr_tresh_seq = seq(80,99, by = 1),out_model = FALSE){
+evaluate_feature_reduction_svm <- function(train,test,to_analyze_cols,over_corr_tresh_seq = seq(87,99, by = 1),out_model = FALSE){
     
     last_feat_number <- -1
     feat_number <-1
-    best <- c(0,0)
+    best_accuracy <- 0
+    best_sensitivity <- 0
+    best_precision <- 0
+    best_score <- 0
+    best_model <- NULL
+    best_model_test <- NULL
+    best_model_train <- NULL
+    best_treshold <-0
     for(over_cor_tresh in over_corr_tresh_seq){
       
       # Filter features with high correlation
-      not_overcorrelated_features <- filter_high_correlation(train, over_cor_tresh/100 ,features_to_analyze)
+      not_overcorrelated_features <- filter_high_correlation(train, over_cor_tresh/100 ,to_analyze_cols)
+     
       corr_matrix_filtered_train <- cor(subset(train,select=not_overcorrelated_features))
       feat_number <- length(not_overcorrelated_features)
       if(last_feat_number != -1)if(last_feat_number == feat_number) next
-      
       # Perform PCA
       projections_coefficients <- perform_pca(train,corr_matrix_filtered_train, 2,not_overcorrelated_features, TRUE)
+     
       train_projections <- project(train[not_overcorrelated_features],projections_coefficients)
-      # visualize_pca(train_projections,train["Class"])
-      
-      # Mean PCA projections over patients
-      class_to_consider <- df_train["SampleClass"]
-      # class_to_consider[class_to_consider != "A"] <- -1
-      # class_to_consider[train["SampleClass"] == "O"] <- "O"
-      mean_projections <- mean_over_samples(train_projections,train["PatientID"], class_to_consider)
-      # visualize_pca(mean_projections,train_patients_class)
-      
-      
-      # Train and visualize SVM with linear kernel
-      # svmfit_linear <- train_svm(mean_projections, train_patients_class, "linear")
-      
+      visualize_pca(train_projections,train["Class"],"Train Set")
+ 
       # Train and visualize SVM with radial kernel
-      svmfit_radial<- train_svm(mean_projections, train_patients_class, "radial",show=out_model)
+      # svmfit_linear <- train_svm(mean_projections, train_patients_class, "linear")
+      svmfit_radial<- train_svm(train_projections, train["Class"], "radial",show= out_model)
+    
       test_projections <-project(test[not_overcorrelated_features],projections_coefficients)
-      mean_test_projections <- mean_over_samples(test_projections,test["PatientID"],test["SampleClass"])
+      visualize_pca(test_projections,test["Class"],"Test Set")
       
-      correct <- test_svm(svmfit_radial,mean_test_projections, test_patients_class,show = out_model)
+      correct <- test_svm(svmfit_radial,test_projections, test["Class"],show = out_model)
       last_feat_number <- feat_number
-      accuracy <- sum(correct)/nrow(mean_test_projections)
-      if(accuracy > best[1]){
-        best[1] <- accuracy
-        best[2] <- over_cor_tresh
+      conf_mat <- confusion_matrix(svmfit_radial,test_projections, test["Class"])
+     
+      accuracy <- (conf_mat[1,1]+conf_mat[2,2])/nrow(test_projections)
+      precision <- conf_mat[2,2]/(conf_mat[2,1]+conf_mat[2,2])
+      sensitivity <- conf_mat[2,2]/(conf_mat[1,2]+conf_mat[2,2])
+      accuracy <- round(accuracy,3)
+      precision <- round(precision,3)
+      sensitivity <-  round(sensitivity,3)
+      
+      score <- sum(c(precision,accuracy,sensitivity))
+     
+      if(score > best_score){
+        best_accuracy <- round(accuracy,3)
+        best_sensitivity <- round(sensitivity,3)
+        best_precision <- round(precision,3)
+        best_treshold <- over_cor_tresh
+        best_model <- svmfit_radial
+        best_model_test <- cbind(test_projections,test["Class"])
+        best_model_train <- cbind(train_projections,train["Class"])
+     
+        best_score <- score
       }
-      if(!out_model)print(paste("For treshold at", over_cor_tresh,": Accuracy =",accuracy))
+      
+      print(paste("For over correlated feature treshold at", over_cor_tresh,": Accuracy =",accuracy, ", Precision = ",precision,", Sensitivity =",sensitivity))
       
     }
     if(out_model) {
       return(svmfit_radial)
     }
-    print(paste("Best : treshold = ",best[2],"Accuracy =",best[1]))
-    return(evaluate_feature_reduction_svm(train,test,over_corr_tresh_seq = seq(best[2],best[2]),out_model = TRUE))
+    
+    print(paste("Best at", best_treshold,": Accuracy =",best_accuracy, ", Precision = ",best_precision,", Sensitivity =",best_sensitivity))
+    show_svm(best_model,best_model_train[,1:2],best_model_train["Class"],"SVM Train")
+    show_svm(best_model,best_model_test[,1:2],best_model_test["Class"],"SVM Test")
+    return(best_model)
   
 }
-
+check_normal_distribution <- function(data,y = "blue") {
+  
+  features <- names(data)[1:(ncol(data)-1)]  # Exclude the last column (Class)
+  
+  point_colors <- as.matrix(y) 
+  point_colors[point_colors == 0] <- "blue"
+  point_colors[point_colors == 1] <- "red"
+  
+  
+  for (feature in features) {
+    qqnorm(data[[feature]], main = paste("Q-Q Plot for", feature), col = point_colors, pch = 20)
+    qqline(data[[feature]], col = "red", lwd = 2)
+  }
+}
+split <- function(df, train_percent = 40/60, case_percent = 25/40, control_percent = 15/40) {
+  # Extract cases and controls
+  cases <- subset(df, df$Class == 1)
+  controls <- subset(df, df$Class == 0)
+  N <- nrow(df)
+  N_train <-round(N*train_percent)
+  case  <- round(N_train*case_percent)
+  control  <- N_train-case
+  
+  # Sample specified number of cases and controls for both train and test sets
+  
+  train_cases <- data.frame(cases[sample(1:nrow(cases), case), ])
+  train_controls <- data.frame(controls[sample(1:nrow(controls), control), ])
+  
+  # print(nrow(train_controls))
+  # print(nrow(test_cases))
+  # print(nrow(test_controls))
+  
+  
+  # Combine train and test sets
+  train_set <- rbind(train_cases, train_controls)
+  test_set <- df[!(rownames(df) %in% rownames(train_set)),]
+  
+  
+  # Sample the specified number of additional rows for the training set
+  # additional_train_rows <- df[sample(setdiff(1:nrow(df), rownames(train_set)), train_cases - nrow(train_set)), ]
+  # train_set <- rbind(train_set, additional_train_rows)
+  
+  # Return the train and test sets
+  return(list(train_set = train_set, test_set = test_set))
+}
 # Main script
 
 # Install and load libraries
@@ -255,34 +345,38 @@ added_features = c("SampleClass")
 categorical <- c("PatientID", "Class","SampleClass")
 predictive <- c("UPDRS")
 features_not_to_analyze <- c(categorical, predictive)
-non_predictive <- features[!(features %in% predictive)]
+non_predictive <- c(features[!(features %in% predictive)])
+with_samples <- c(non_predictive,"SampleClass")
 features_to_analyze <- features[!(features %in% features_not_to_analyze)]
 
 train_samples <- c("A", "O", "U", 4:26)
 test_samples <- c(rep("A", 3), rep("O", 3))
 
 # Read data
-df_train <- read_data('train_data.txt', features)
-df_test <- read_data('test_data.txt', non_predictive)
-df_train["SampleClass"] <- rep(train_samples,length(df_train)/length(train_samples))
-df_test["SampleClass"] <- rep(test_samples,length(df_test)/length(test_samples))
-train_patients_class <- array()
-test_patients_class <- array()
-for(i in 1:max(df_train["PatientID"])){
-  train_patients_class[i] <- df_train[df_train["PatientID"] == i,"Class"][1]
-}
-for(i in 1:max(df_test["PatientID"])){
-  test_patients_class[i] <- df_test[df_test["PatientID"] == i,"Class"][1]
-}
+data_train <- read_data('train_data.txt', features)
+data_test <- read_data('test_data.txt', non_predictive)
+data_train["SampleClass"] <- rep(train_samples,nrow(data_train)/length(train_samples))
+data_test["SampleClass"] <- rep(test_samples,nrow(data_test)/length(test_samples))
+data_test["PatientID"] <- data_test["PatientID"] + max(data_train["PatientID"])
+df<- rbind.data.frame(subset(data_train,select = with_samples),subset(data_test,select = with_samples))
+df <- mean_over_samples(df[features_to_analyze],df)
+split_data <- split(df,60/100)
+# Access train and test sets
+df_train <- split_data$train_set
+df_test <- split_data$test_set
+colnames(df_train) <- colnames(df)
+colnames(df_test) <- colnames(df)
+
 # Check for missing values
 naCheck(df_train)
 naCheck(df_test)
 
 # Normalize data
-df_train_normalized <- normalize_data(df_train, features_to_analyze, non_predictive)
+df_train_normalized <- normalize_data(df_train, features_to_analyze)
 df_test_normalized <- normalize_data(df_test, features_to_analyze)
-best_svm <- evaluate_feature_reduction_svm(df_train_normalized,df_test_normalized)
+best_svm <- evaluate_feature_reduction_svm(df_train_normalized,df_test_normalized,features_to_analyze)
 
+# check_normal_distribution(df_train_normalized, df_train["Class"])
 
 
 
