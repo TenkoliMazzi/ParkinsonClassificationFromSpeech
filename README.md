@@ -49,21 +49,30 @@ In the test dataset, 28 PD patients were asked to say sustained vowels 'a' and '
 ## Method
 The method is the following:
   -  Merge the legacy train and test data.
-  -  Mean the features for each patients over the different kinds of audio samples.
+  -  Aggregate in a new dataset the different kinds of audio samples from the same patient (more below).
   -  Split the dataset in a new Train and Test, with better distribution of case and control.
-  -  Check for redundancy in features of Train: for each features couple the whose correlation is higher than a treshold, discard (in both the datasets) one of the two.
+  -  (Not necessary) Check for redundancy in features of Train: for each features couple the whose correlation is higher than a treshold, discard (in both the datasets) one of the two.
   -  Perform PCA analysis on the filtered Train data, retrieving PCA Coefficients.
   -  Project Train data in the PCA Space.
   -  Train the SVM Model over the Train PCA Projections.
   -  Project Test data in the PCA Space, using the Train PCA Coefficients.
   -  Check the Model performance (Accuracy, Precision, Sensitivity).
 
-Repeating the method for different correlation tresholds can yeld the better result for a given train dataset.
+The method is then repeated for all the kinds of aggregation of the samples from the same patient, the features used to aggregate the dataset are the following :
+
+Mean, Standard Deviation, Energy
+    
+The averages results of the model with a train set constructed over these features are then printed to screen.
 The results are visualized with scatter plots and decision boundaries.
 <p float="center">
     <img src="https://github.com/TenkoliMazzi/ParkinsonClassificationFromSpeech/blob/main/images/SVMRadialTrain.png" alt="SVM Plot Train" width="45%" height="45%">
     <img src="https://github.com/TenkoliMazzi/ParkinsonClassificationFromSpeech/blob/main/images/SVMRadialTest.png" alt="SVM Plot Test" width="45%" height="45%">
 </p>
+
+## Code
+The code is structured in a main script that has the task specific instructions, the other scripts are more versatile and could be adapted fairly easily to any dataset.
+
+Functions to visualize PCA Projections and SVM Models results are also included.
 
 Feel free to adapt the script to your specific dataset and requirements. If you encounter any issues or have questions, please don't hesitate to reach out.
 
