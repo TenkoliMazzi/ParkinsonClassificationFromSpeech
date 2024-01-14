@@ -62,6 +62,15 @@ The method is then repeated for all the kinds of aggregation of the samples from
 
 Mean, Standard Deviation, Energy, RMS
 
+
+ 
+The averages results of the model with a train set constructed over these features are then printed to screen.
+The results are visualized with scatter plots and decision boundaries.
+<p float="center">
+    <img src="https://github.com/TenkoliMazzi/ParkinsonClassificationFromSpeech/blob/main/images/SVMRadialTrain.png" alt="SVM Plot Train" width="45%" height="45%">
+    <img src="https://github.com/TenkoliMazzi/ParkinsonClassificationFromSpeech/blob/main/images/SVMRadialTest.png" alt="SVM Plot Test" width="45%" height="45%">
+</p>
+
 Testing shows that Standard Deviation of the vocal features over different samples yields the best results in the metrics, with a top score of : 
 
   "Accuracy : 0.8448"
@@ -71,14 +80,7 @@ Testing shows that Standard Deviation of the vocal features over different sampl
   "Sensitivity : 0.8262"
   
   "Cumulative Score : 2.6001"
- 
-The averages results of the model with a train set constructed over these features are then printed to screen.
-The results are visualized with scatter plots and decision boundaries.
-<p float="center">
-    <img src="https://github.com/TenkoliMazzi/ParkinsonClassificationFromSpeech/blob/main/images/SVMRadialTrain.png" alt="SVM Plot Train" width="45%" height="45%">
-    <img src="https://github.com/TenkoliMazzi/ParkinsonClassificationFromSpeech/blob/main/images/SVMRadialTest.png" alt="SVM Plot Test" width="45%" height="45%">
-</p>
-
+  
 ## Code
 The code is structured in a main script that has the task specific instructions, the other scripts are more versatile and could be adapted fairly easily to any dataset.
 
