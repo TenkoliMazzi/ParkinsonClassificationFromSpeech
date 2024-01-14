@@ -63,11 +63,15 @@ The method is then repeated for all the kinds of aggregation of the samples from
 Mean, Standard Deviation, Energy, RMS
 
 Testing shows that Standard Deviation of the vocal features over different samples yields the best results in the metrics, with a top score of : 
-"Accuracy : 0.8448"
-"Precision : 0.9291"
-"Sensitivity : 0.8262"
-"Cumulative Score : 2.6001"
-    
+
+  "Accuracy : 0.8448"
+  
+  "Precision : 0.9291"
+  
+  "Sensitivity : 0.8262"
+  
+  "Cumulative Score : 2.6001"
+ 
 The averages results of the model with a train set constructed over these features are then printed to screen.
 The results are visualized with scatter plots and decision boundaries.
 <p float="center">
