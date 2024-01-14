@@ -60,21 +60,23 @@ getTestMetric <- function(obj,metric){
 getTestScore <- function(obj){
   UseMethod("getTestScore")
 }
+getTestMetrics <- function(obj){
+  UseMethod("getTestMetrics")
+}
 
 confusion_matrix <- function(y_pred,y){
-
   
   pp <- sum(y_pred == "1")
-  
   pn <- sum(y_pred == "0")
+  
   tp <- sum(y_pred == "1" &  y == 1)
   tn <- sum(y_pred == "0" & y == 0)
   
   fp <- pp-tp
-  
   fn <- pn-tn
   return(matrix(c(tn,fn,fp,tp),2,2))
 }
+
 
 plot_svm <- function(svmmodel,data,y,label){
   X1 = seq(min(data[, 1])-.2, max(data[, 1])+.2, by = .1)
@@ -152,11 +154,26 @@ getTestMetric.SupportVectorMachine <- function(obj,metric){
     print("You have to test the model before getting any test metric.")
     return(0)
   }
-  
   return(get(metric)(obj$conf_mat_test))
 }
+
+  
+getTestMetrics.SupportVectorMachine <- function(obj){
+  if(is.null(obj$conf_mat_test)){
+    print(obj)
+    print("You have to test the model before getting any test metric.")
+    return(0)
+  }
+  metrics = list()
+  for(metric in obj$metrics){
+      metrics[metric] = getTestMetric(obj,metric)
+  }
+  return(metrics)
+}
+  
+  
 getTestScore.SupportVectorMachine <- function(obj){
-  return(getTestMetric(obj,"accuracy")+getTestMetric(obj,"precision")+getTestMetric(obj,"sensitivity"))
+  return(sum(as.double(getTestMetrics(obj))))
 }
 
 accuracy <- function(conf_mat){
@@ -168,6 +185,9 @@ precision <- function(conf_mat){
 sensitivity <- function(conf_mat){
   return(round(conf_mat[2,2]/(conf_mat[2,1]+conf_mat[2,2]),3))
 }
+
+
+
 
 show.SupportVectorMachine <- function(obj, additional_label =""){
   plot_svm(obj$model,obj$dataset_train,obj$dataset_train_labels,paste("SVM Train",additional_label))
